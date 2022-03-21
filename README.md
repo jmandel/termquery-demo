@@ -1,3 +1,8 @@
+# Termquery demo
+
+* `Concept.where(terms.IN.matches('acetaminophen')).select(rels.ingredient_of).select(rels.constitutes)`
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

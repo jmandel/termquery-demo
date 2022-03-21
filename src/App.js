@@ -6,6 +6,9 @@ import fhirpath from 'fhirpath';
 import {useEffect, useState} from "react";
 
 	let qDefault = "Concept.where(terms.IN.matches('acetaminophen')).select(rels.ingredient_of).select(rels.constitutes)";
+  if (window.location.hash.length > 1) {
+    qDefault = window.location.hash.slice(1)
+  }
 function App() {
 
   const [db, setDb] = useState(null)
@@ -52,10 +55,10 @@ function App() {
   return (
     <div className="App">
       <input style={{width: "100%"}} value={q} onChange={(e) => setQ(e.target.value)} />
+      <h3>Generated SQL</h3>
+      <pre>{output?.sql}</pre>
       <h3>{output?.results?.length}{output?.results?.length === 500 ? "+": ""} Results ({output.qTime}ms)</h3>
       <pre>{JSON.stringify(output.results || [], null, 2)}</pre>
-      <h3>Generated SQL</h3>
-      <p>{output?.sql}</p>
       <h3>Parsed FHIRpath</h3>
       <pre>{JSON.stringify(output?.parsed || {}, null, 2)}</pre>
     </div>

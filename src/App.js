@@ -38,17 +38,17 @@ function App() {
       return;
     }
     setOutput({...output, computing: true});
-    let results = [];
-    let t0 = new Date().getTime();
-    let stmt = db.prepare(qExecuting);
-    while (stmt.step()) {
-      results.push(JSON.parse(stmt.get()[0]));
-      if (results.length >= 500) break;
-    }
-    let t1 = new Date().getTime();
-    let qTime = t1 - t0;
     let cancel = false;
     setTimeout(()=>{
+      let results = [];
+      let t0 = new Date().getTime();
+      let stmt = db.prepare(qExecuting);
+      while (stmt.step()) {
+        results.push(JSON.parse(stmt.get()[0]));
+        if (results.length >= 500) break;
+      }
+      let t1 = new Date().getTime();
+      let qTime = t1 - t0;
       !cancel && setOutput({
         ...output,
         results,

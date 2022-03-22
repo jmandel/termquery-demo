@@ -34,8 +34,7 @@ function App() {
   }, [q]);
   
   useEffect(() => {
-    if (!db) {
-      console.log("Waiting on db");
+    if (!db || !qExecuting) {
       return;
     }
     setOutput({...output, computing: true});

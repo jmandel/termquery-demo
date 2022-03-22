@@ -13,6 +13,7 @@ if (window.location.hash.length > 1) {
 function App() {
   const [db, setDb] = useState(null);
   const [q, setQ] = useState(qDefault);
+  const [qExecuting, setQExecuting] = useState(null);
   const [output, setOutput] = useState({});
 
   useEffect(async () => {
@@ -24,34 +25,42 @@ function App() {
   }, []);
 
   useEffect(() => {
-    console.log("Eff", db, q);
     let parsed, sql;
     try {
       parsed = fhirpath.parse(q);
       sql = toSql(parsed);
-    } catch {
-      return;
-    }
-    let results = [];
-    let t0 = new Date().getTime();
+    } catch {}
+    setOutput({parsed, sql, results: null, computing: false});
+  }, [q]);
+  
+  useEffect(() => {
     if (!db) {
       console.log("Waiting on db");
       return;
     }
-    let stmt = db.prepare(sql); // Run the query without returning anything
+    setOutput({...output, computing: true});
+    let results = [];
+    let t0 = new Date().getTime();
+    let stmt = db.prepare(qExecuting);
     while (stmt.step()) {
-      results.push(JSON.parse(stmt.get()[0])); // Will print [0, 'hello']
+      results.push(JSON.parse(stmt.get()[0]));
       if (results.length >= 500) break;
     }
     let t1 = new Date().getTime();
     let qTime = t1 - t0;
-    setOutput({
-      parsed,
-      sql,
-      results,
-      qTime,
+    let cancel = false;
+    setTimeout(()=>{
+      !cancel && setOutput({
+        ...output,
+        results,
+        qTime,
+        computing: false
+      });
     });
-  }, [db, q]);
+    return () => {
+      cancel = true;
+    }
+  }, [db, qExecuting]);
 
   return (
     <div className="App">
@@ -61,6 +70,7 @@ function App() {
         onChange={(e) => setQ(e.target.value)}
       />
       <h3>Generated SQL</h3>
+      <button disabled={!output.sql || output.computing} onClick={()=>{setQExecuting(output.sql)}}>Run SQL Query</button>
       <pre>{output?.sql}</pre>
       <h3>
         {output?.results?.length}
